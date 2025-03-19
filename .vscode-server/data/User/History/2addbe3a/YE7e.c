@@ -320,8 +320,7 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-    list_insert_ordered(&ready_list, &cur->elem, priority_large_func, NULL);
-    // list_push_back (&ready_list, &cur->elem); /*일단 레디 리스트에 넣어 아이들이 아니면*/
+    list_push_back (&ready_list, &cur->elem); /*일단 레디 리스트에 넣어 아이들이 아니면*/
   cur->status = THREAD_READY; /*레디에 넣었으니 status를 바꿔줌*/
   schedule (); /*schedule을 실행해서 priority가 높은 순으로 다시 정렬*/
   // msg("schedule hello");
@@ -350,11 +349,8 @@ thread_foreach (thread_action_func *func, void *aux)
 void
 thread_set_priority (int new_priority) 
 {
+  if(new_priority <)
   thread_current ()->priority = new_priority;
-  if(new_priority < list_entry(list_begin(&ready_list), struct thread, elem)->priority){
-    thread_yield();
-    // msg("wow success!");
-  }
 }
 
 /* Returns the current thread's priority. */

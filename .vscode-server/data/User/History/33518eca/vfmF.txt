@@ -1,0 +1,1 @@
+1.set_priority 에서 더 높은 Priority를 갖는 thread가 ready_list에 있다면 바로 yield하라는데, 같은 priority라면?

@@ -202,7 +202,7 @@ thread_create (const char *name, int priority,
   sf = alloc_frame (t, sizeof *sf);
   sf->eip = switch_entry;
   sf->ebp = 0;
-
+  msg("hello");
   /* Add to run queue. */
   thread_unblock (t);
 
@@ -233,8 +233,8 @@ thread_block (void)
    be important: if the caller had disabled interrupts itself,
    it may expect that it can atomically unblock a thread and
    update other data. */
-bool priority_large_func(struct list_elem *a, struct list_elem *b) {
-    return list_entry(a, struct thread, elem)->priority >= list_entry(b, struct thread, elem)->priority;
+bool priority_less_func(struct list_elem *a, struct list_elem *b) {
+    return list_entry(a, struct thread, elem)->priority < list_entry(b, struct thread, elem)->priority;
 }
 
 void
@@ -246,9 +246,8 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-
-  list_insert_ordered(&ready_list, &t->elem, priority_large_func, NULL);
-  // list_push_back (&ready_list, &t->elem); //t->elem 의 주소를 push_back하는거임
+  list_insert_ordered(&ready_list, &t->elem, priority_less_func, NULL);
+  list_push_back (&ready_list, &t->elem); //t->elem 의 주소를 push_back하는거임 + 항상 레디리스트는 priority순으로 정렬되어있어야할듯함.
   t->status = THREAD_READY;
   // msg("%s woke up.\n",t->name);
   intr_set_level (old_level);
@@ -320,8 +319,7 @@ thread_yield (void)
 
   old_level = intr_disable ();
   if (cur != idle_thread) 
-    list_insert_ordered(&ready_list, &cur->elem, priority_large_func, NULL);
-    // list_push_back (&ready_list, &cur->elem); /*일단 레디 리스트에 넣어 아이들이 아니면*/
+    list_push_back (&ready_list, &cur->elem); /*일단 레디 리스트에 넣어 아이들이 아니면*/
   cur->status = THREAD_READY; /*레디에 넣었으니 status를 바꿔줌*/
   schedule (); /*schedule을 실행해서 priority가 높은 순으로 다시 정렬*/
   // msg("schedule hello");
@@ -346,15 +344,10 @@ thread_foreach (thread_action_func *func, void *aux)
 }
 
 /* Sets the current thread's priority to NEW_PRIORITY. */
-//만약 ready_list에 더 큰 priority의 스레드가 있다면, 바로 yield
 void
 thread_set_priority (int new_priority) 
 {
   thread_current ()->priority = new_priority;
-  if(new_priority < list_entry(list_begin(&ready_list), struct thread, elem)->priority){
-    thread_yield();
-    // msg("wow success!");
-  }
 }
 
 /* Returns the current thread's priority. */
