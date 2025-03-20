@@ -238,7 +238,9 @@ thread_block (void)
    update other data. */
 bool priority_large_func(struct list_elem *a, struct list_elem *b) {
     // 이 부분에서 만약에 시간이 같다면 뒤에 넣는 식으로 fifo로 해야할듯함.
-    return list_entry(a, struct thread, elem)->priority >= list_entry(b, struct thread, elem)->priority;
+    int priority_a = list_entry(a, struct thread, elem)->priority;
+    int priority_b = list_entry(b, struct thread, elem)->priority;
+    return priority_a > priority_b;
 }
 
 void
