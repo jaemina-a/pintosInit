@@ -34,8 +34,11 @@ test_alarm_priority (void)
 
   thread_set_priority (PRI_MIN); //이제 default thread의 우선순위가 0이 되었으므로, 생성된 thread가 running될 수 있음.
 
-  for (i = 0; i < 10; i++)
+  for (i = 0; i < 10; i++){
+    // msg("sema value: %d",wait_sema.value);
     sema_down (&wait_sema);
+  }
+    
 }
 
 static void
@@ -51,8 +54,10 @@ alarm_priority_thread (void *aux UNUSED)
      between checking the time and a timer interrupt. */
   timer_sleep (wake_time - timer_ticks ());
 
-  /* Print a message on wake-up. */
+  /* Print a message on wa₩ke-up. */
   msg ("Thread %s woke up.", thread_name ());
 
   sema_up (&wait_sema);
+
+  // msg("sema value: %d",wait_sema.value);
 }

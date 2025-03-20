@@ -201,7 +201,9 @@ timer_interrupt (struct intr_frame *args UNUSED)
       if(t_w->wake_time_fut<=timer_ticks()){
         thread_unblock(t_w);
         list_pop_front(&sleep_list);
-        break;
+      }
+      else {
+        break; //동시에 깨우지 않으면 simultaneous 케이스에 대해서 1틱씩 밀림 : 하나 깨우고 interrupt발생 -> ticks++ -> 1틱 이후에 깨는 현상 발생
       }
     }
   }

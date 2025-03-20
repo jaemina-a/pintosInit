@@ -205,7 +205,10 @@ thread_create (const char *name, int priority,
 
   /* Add to run queue. */
   thread_unblock (t);
-
+  //unblock에서 하지말고, 여기서 조정.
+  if(thread_current()->priority < t->priority){
+    thread_yield();
+  }
   return tid;
 }
 
@@ -234,6 +237,7 @@ thread_block (void)
    it may expect that it can atomically unblock a thread and
    update other data. */
 bool priority_large_func(struct list_elem *a, struct list_elem *b) {
+    // 이 부분에서 만약에 시간이 같다면 뒤에 넣는 식으로 fifo로 해야할듯함.
     return list_entry(a, struct thread, elem)->priority >= list_entry(b, struct thread, elem)->priority;
 }
 
@@ -246,10 +250,15 @@ thread_unblock (struct thread *t)
 
   old_level = intr_disable ();
   ASSERT (t->status == THREAD_BLOCKED);
-
+  //스레드가 unblock될때 현재 실행중인 스레드보다 우선순위가 높으면 바로 running?
+  
   list_insert_ordered(&ready_list, &t->elem, priority_large_func, NULL);
   // list_push_back (&ready_list, &t->elem); //t->elem 의 주소를 push_back하는거임
   t->status = THREAD_READY;
+  // if(thread_current()->priority < t->priority){
+  //   msg("running: %d, unblock: %d",thread_current()->priority,t->priority);
+  //   thread_yield();
+  // }
   // msg("%s woke up.\n",t->name);
   intr_set_level (old_level);
 }
@@ -590,7 +599,7 @@ static void
 schedule (void) /* 현재 실행하고 있는 놈보다 더 큰 우선순위를 갖은 놈에게 cpu를 양보해야한다 */
 {
   struct thread *cur = running_thread (); /* 지금 실행하고 있는거 */
-  struct thread *next = next_thread_to_run (); /* 다음에 실행할 쓰레드 */
+  struct thread *next = next_thread_to_run (); /* 다음에 실행할 쓰레드 pop 을 한 상황임*/
   struct thread *prev = NULL;
 
   ASSERT (intr_get_level () == INTR_OFF); /* 인터럽트 오프여야함 */
